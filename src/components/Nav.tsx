@@ -12,7 +12,7 @@ const links = [
   { label: 'Contact', id: 'contact' },
 ]
 
-export default function Nav() {
+export default function Nav({ name: _name }: { name?: string }) {
   const [open, setOpen] = useState(false)
   const [activeId, setActiveId] = useState('about')
   const [activeTab, setActiveTab] = useState('projects')

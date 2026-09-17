@@ -14,7 +14,9 @@ interface CertificateRow {
 
 const emptyForm = {
   title: '',
+  issuer: '',
   issue_date: '',
+  credential_url: '',
   image_url: '',
 }
 
@@ -27,6 +29,7 @@ export default function CertificatesManager() {
   const [error, setError] = useState<string | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
 
+  // Professional live drag & drop state variables
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const itemRefs = useRef<Map<string, HTMLElement>>(new Map())
@@ -50,11 +53,13 @@ export default function CertificatesManager() {
 
       node.style.transition = 'none'
       node.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`
-      frames.push(window.requestAnimationFrame(() => {
-        node.style.transition =
-          'transform 340ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, opacity 220ms ease'
-        node.style.transform = 'translate3d(0, 0, 0)'
-      }))
+      frames.push(
+        window.requestAnimationFrame(() => {
+          node.style.transition =
+            'transform 340ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, opacity 220ms ease'
+          node.style.transform = 'translate3d(0, 0, 0)'
+        })
+      )
     })
     previousRects.current = nextRects
     return () => frames.forEach((frame) => window.cancelAnimationFrame(frame))
@@ -193,14 +198,12 @@ export default function CertificatesManager() {
 
   async function updateSortOrders(updatedItems: CertificateRow[]) {
     if (!supabase) return
+    const client = supabase
 
     setCertificates(updatedItems)
 
     const updates = updatedItems.map((item, index) =>
-      supabase
-        .from('certificates')
-        .update({ sort_order: index })
-        .eq('id', item.id)
+      client.from('certificates').update({ sort_order: index }).eq('id', item.id)
     )
 
     const results = await Promise.all(updates)
@@ -221,7 +224,9 @@ export default function CertificatesManager() {
     setEditingId(cert.id)
     setForm({
       title: cert.title,
+      issuer: cert.issuer ?? '',
       issue_date: cert.issue_date ?? '',
+      credential_url: cert.credential_url ?? '',
       image_url: cert.image_url ?? '',
     })
     setError(null)
@@ -248,9 +253,9 @@ export default function CertificatesManager() {
 
     const payload = {
       title: form.title.trim(),
-      issuer: '',
-      issue_date: null,
-      credential_url: null,
+      issuer: form.issuer.trim() || '',
+      issue_date: form.issue_date.trim() || null,
+      credential_url: form.credential_url.trim() || null,
       image_url: form.image_url.trim() || null,
     }
 
@@ -266,12 +271,10 @@ export default function CertificatesManager() {
         return
       }
     } else {
-      const { error: saveError } = await supabase
-        .from('certificates')
-        .insert({
-          ...payload,
-          sort_order: certificates.length,
-        })
+      const { error: saveError } = await supabase.from('certificates').insert({
+        ...payload,
+        sort_order: certificates.length,
+      })
 
       if (saveError) {
         setSaving(false)
@@ -291,10 +294,7 @@ export default function CertificatesManager() {
     const confirmed = window.confirm('Are you sure you want to delete this certificate?')
     if (!confirmed) return
 
-    const { error: deleteError } = await supabase
-      .from('certificates')
-      .delete()
-      .eq('id', id)
+    const { error: deleteError } = await supabase.from('certificates').delete().eq('id', id)
 
     if (deleteError) {
       setError(deleteError.message)
@@ -315,7 +315,10 @@ export default function CertificatesManager() {
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="eyebrow">Portfolio Content</p>
-          <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+          <h1
+            className="font-display mt-2 text-3xl font-semibold tracking-tight"
+            style={{ color: 'var(--text)' }}
+          >
             Certificates Management
           </h1>
           <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -344,6 +347,10 @@ export default function CertificatesManager() {
           </span>
         </div>
 
+        <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+          Drag cards to reorder your certifications layout.
+        </p>
+
         {loading ? (
           <p className="mt-8 text-sm" style={{ color: 'var(--text-muted)' }}>
             Loading certificates...
@@ -363,11 +370,18 @@ export default function CertificatesManager() {
                   rounded-2xl
                   transition-all
                   duration-200
-                  ${draggedId === cert.id ? 'opacity-45 scale-[0.985] border-2 border-dashed border-accent shadow-xl' : ''}
+                  ${
+                    draggedId === cert.id
+                      ? 'opacity-45 scale-[0.985] border-2 border-dashed border-accent shadow-xl'
+                      : ''
+                  }
                   ${dragOverId === cert.id && draggedId !== cert.id ? 'ring-2 ring-accent ring-offset-2' : ''}
                 `}
               >
-                <div className="relative h-48 w-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
+                <div
+                  className="relative h-48 w-full overflow-hidden"
+                  style={{ backgroundColor: 'var(--surface-2)' }}
+                >
                   <div
                     className="absolute left-3 top-3 z-10 flex h-8 w-8 drag-handle cursor-grab items-center justify-center rounded-lg bg-black/60 text-white shadow backdrop-blur transition-transform active:cursor-grabbing hover:scale-105"
                     title="Drag to reorder"
@@ -375,7 +389,12 @@ export default function CertificatesManager() {
                     onDragStart={(e) => handleDragStart(e, cert.id)}
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 8h16M4 16h16"
+                      />
                     </svg>
                   </div>
 
@@ -391,7 +410,16 @@ export default function CertificatesManager() {
                 </div>
 
                 <div className="p-5">
-                  <h3 className="font-display mt-2 line-clamp-2 text-lg font-semibold" style={{ color: 'var(--text)' }}>
+                  {cert.issuer && (
+                    <p className="font-mono text-xs" style={{ color: 'var(--accent)' }}>
+                      {cert.issuer} {cert.issue_date ? `• ${cert.issue_date}` : ''}
+                    </p>
+                  )}
+
+                  <h3
+                    className="font-display mt-2 line-clamp-2 text-lg font-semibold"
+                    style={{ color: 'var(--text)' }}
+                  >
                     {cert.title}
                   </h3>
 
@@ -438,10 +466,19 @@ export default function CertificatesManager() {
       </section>
 
       {isEditorOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:py-10" style={{ backgroundColor: 'rgba(0, 0, 0, 0.78)' }}>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:py-10"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.78)' }}
+        >
           <div className="mx-auto max-w-2xl">
-            <section className="soft-panel rounded-2xl p-5 shadow-2xl sm:p-7" style={{ backgroundColor: 'var(--surface)' }}>
-              <div className="flex items-start justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
+            <section
+              className="soft-panel rounded-2xl p-5 shadow-2xl sm:p-7"
+              style={{ backgroundColor: 'var(--surface)' }}
+            >
+              <div
+                className="flex items-start justify-between gap-4 border-b pb-5"
+                style={{ borderColor: 'var(--border)' }}
+              >
                 <div>
                   <p className="eyebrow">Certificate Editor</p>
                   <h2 className="font-display mt-2 text-2xl font-semibold" style={{ color: 'var(--text)' }}>
@@ -473,6 +510,47 @@ export default function CertificatesManager() {
                   />
                 </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                      Issuer
+                    </label>
+                    <input
+                      value={form.issuer}
+                      onChange={(e) => setForm({ ...form, issuer: e.target.value })}
+                      className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
+                      style={inputStyle}
+                      placeholder="e.g. Coursera / Google / DEPI"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                      Issue Date
+                    </label>
+                    <input
+                      value={form.issue_date}
+                      onChange={(e) => setForm({ ...form, issue_date: e.target.value })}
+                      className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
+                      style={inputStyle}
+                      placeholder="e.g. 2026"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                    Credential URL
+                  </label>
+                  <input
+                    value={form.credential_url}
+                    onChange={(e) => setForm({ ...form, credential_url: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
+                    style={inputStyle}
+                    placeholder="https://www.coursera.org/verify/..."
+                  />
+                </div>
+
                 <div>
                   <AssetUploader
                     label="Certificate Image"
@@ -484,12 +562,18 @@ export default function CertificatesManager() {
                 </div>
 
                 {error && (
-                  <p className="rounded-xl border px-3 py-2.5 text-sm" style={{ borderColor: '#DC5B4B', color: '#DC5B4B' }}>
+                  <p
+                    className="rounded-xl border px-3 py-2.5 text-sm"
+                    style={{ borderColor: '#DC5B4B', color: '#DC5B4B' }}
+                  >
                     {error}
                   </p>
                 )}
 
-                <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end" style={{ borderColor: 'var(--border)' }}>
+                <div
+                  className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end"
+                  style={{ borderColor: 'var(--border)' }}
+                >
                   <button
                     type="button"
                     onClick={resetForm}

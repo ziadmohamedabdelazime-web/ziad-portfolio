@@ -273,7 +273,7 @@ export default function ProjectDetail() {
           </div>
         </section>
 
-        {project.keyFeatures.length > 0 && (
+        {(project.keyFeatures?.length ?? 0) > 0 && (
           <section className="mt-12 border-t pt-12" style={{ borderColor: 'var(--border)' }}>
             <p className="eyebrow">Highlights</p>
             <h2 className="font-display mt-3 text-2xl font-semibold" style={{ color: 'var(--text)' }}>
@@ -281,7 +281,7 @@ export default function ProjectDetail() {
             </h2>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {project.keyFeatures.map((feature, index) => (
+              {(project.keyFeatures ?? []).map((feature, index) => (
                 <div key={feature} className="soft-panel rounded-2xl p-5">
                   <span className="font-mono text-xs" style={{ color: 'var(--accent)' }}>
                     0{index + 1}

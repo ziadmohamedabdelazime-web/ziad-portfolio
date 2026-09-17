@@ -6,7 +6,6 @@ import AssetUploader from '../../components/admin/AssetUploader'
 
 const emptyForm = {
   name: '',
-  description: '',
   image_url: '',
 }
 
@@ -20,7 +19,6 @@ export default function SkillsManager() {
   const [editorOpen, setEditorOpen] = useState(false)
 
   // Professional live drag & drop.
-  // Dragging starts only from the dedicated handle; cards themselves are not draggable.
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const itemRefs = useRef<Map<string, HTMLElement>>(new Map())
@@ -103,12 +101,6 @@ export default function SkillsManager() {
     if (fromIndex < 0 || targetIndex < 0) return
 
     const rect = event.currentTarget.getBoundingClientRect()
-
-    // Exact-card swap:
-    // If the pointer is actually inside the target card, exchange the two
-    // cards directly (A <-> B) instead of inserting A before/after B.
-    // The guard prevents rapid back-and-forth swaps while the pointer stays
-    // over the same physical card.
     const pointerInsideTarget =
       event.clientX >= rect.left &&
       event.clientX <= rect.right &&
@@ -194,11 +186,12 @@ export default function SkillsManager() {
 
   async function updateSortOrders(updatedItems: Skill[]) {
     if (!supabase) return
+    const client = supabase
 
     setSkills(updatedItems)
 
     const updates = updatedItems.map((item, index) =>
-      supabase
+      client
         .from('skills')
         .update({ sort_order: index })
         .eq('id', item.id)
@@ -227,13 +220,10 @@ export default function SkillsManager() {
 
   function startEdit(skill: Skill) {
     setEditingId(skill.id)
-
     setForm({
       name: skill.name,
-      description: skill.description ?? '',
       image_url: skill.image_url ?? '',
     })
-
     setError(null)
     setEditorOpen(true)
   }
@@ -257,7 +247,7 @@ export default function SkillsManager() {
     const payload = {
       name: form.name.trim(),
       category: 'Other',
-      description: form.description.trim() || null,
+      description: null,
       image_url: form.image_url.trim() || null,
     }
 
@@ -281,7 +271,6 @@ export default function SkillsManager() {
 
   async function handleDelete(id: string) {
     if (!supabase) return
-
     if (!window.confirm('Delete this skill permanently?')) return
 
     const { error: deleteError } = await supabase
@@ -308,266 +297,239 @@ export default function SkillsManager() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="eyebrow">Tech Stack Editor</p>
-
           <h2
             className="font-display mt-2 text-2xl font-semibold sm:text-3xl"
             style={{ color: 'var(--text)' }}
           >
-            Skills
+            Skills Management
           </h2>
-
-          <p
-            className="mt-1.5 text-sm"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            Manage the skills displayed on your portfolio.
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Manage your technical skills and tools.
           </p>
         </div>
 
         <button
           type="button"
           onClick={openAddSkill}
-          className="primary-button shrink-0"
+          className="primary-button"
         >
           + Add Skill
         </button>
       </div>
 
-      {loading ? (
-        <div
-          className="soft-panel rounded-2xl p-8 text-center text-sm"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Loading skills...
-        </div>
-      ) : skills.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {skills.map((skill, index) => (
-            <article
-              key={skill.id}
-              ref={(node) => setItemRef(skill.id, node)}
-              onDragOver={(e) => handleDragOver(e, skill.id)}
-              onDrop={(e) => handleDrop(e)}
-              onDragEnd={handleDragEnd}
-              className={`
-                soft-panel
-                h-[150px]
-                rounded-2xl
-                p-4
-                transition-all
-                duration-200
-                ${draggedId === skill.id ? 'opacity-45 scale-[0.985] border-2 border-dashed border-accent shadow-xl' : ''}
-                ${dragOverId === skill.id && draggedId !== skill.id ? 'ring-2 ring-accent ring-offset-2' : ''}
-              `}
+      <section className="mt-9">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="eyebrow">Portfolio Content</p>
+            <h3
+              className="font-display mt-2 text-xl font-semibold"
+              style={{ color: 'var(--text)' }}
             >
-              <div className="flex h-full flex-col">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-8 w-8 cursor-grab shrink-0 items-center justify-center rounded-lg border transition-transform active:cursor-grabbing hover:scale-105"
-                    style={{
-                      borderColor: 'var(--border)',
-                      backgroundColor: 'var(--bg)',
-                      color: 'var(--text-muted)',
-                    }}
-                    title="Drag to reorder"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, skill.id)}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                    </svg>
-                  </div>
+              Existing Skills
+            </h3>
+          </div>
 
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border"
-                    style={{
-                      borderColor: 'var(--border)',
-                      backgroundColor: 'var(--bg)',
-                    }}
-                  >
-                    {skill.image_url ? (
-                      <img
-                        src={skill.image_url}
-                        alt={skill.name}
-                        className="h-full w-full object-contain p-1.5"
-                      />
-                    ) : (
-                      <span
+          <span
+            className="rounded-full border px-3 py-1.5 font-mono text-xs"
+            style={{
+              borderColor: 'var(--border)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {skills.length} total
+          </span>
+        </div>
+
+        {loading ? (
+          <p
+            className="mt-6 text-sm"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Loading skills...
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {skills.map((skill) => (
+              <article
+                key={skill.id}
+                ref={(node) => setItemRef(skill.id, node)}
+                onDragOver={(e) => handleDragOver(e, skill.id)}
+                onDrop={(e) => handleDrop(e)}
+                onDragEnd={handleDragEnd}
+                className={`
+                  soft-panel
+                  rounded-2xl
+                  p-5
+                  transition-all
+                  duration-200
+                  ${draggedId === skill.id ? 'opacity-45 scale-[0.985] border-2 border-dashed border-accent shadow-xl' : ''}
+                  ${dragOverId === skill.id && draggedId !== skill.id ? 'ring-2 ring-accent ring-offset-2' : ''}
+                `}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-8 w-7 drag-handle cursor-grab items-center justify-center rounded-lg border transition-transform active:cursor-grabbing hover:scale-105"
+                      style={{
+                        borderColor: 'var(--border)',
+                        backgroundColor: 'var(--bg)',
+                        color: 'var(--text-muted)',
+                      }}
+                      title="Drag to reorder"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, skill.id)}
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                      </svg>
+                    </div>
+
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border"
+                      style={{
+                        borderColor: 'var(--border)',
+                        backgroundColor: 'var(--bg)',
+                      }}
+                    >
+                      {skill.image_url ? (
+                        <img
+                          src={skill.image_url}
+                          alt={skill.name}
+                          className="h-full w-full object-contain p-1.5"
+                        />
+                      ) : (
+                        <span
+                          className="font-display text-xs font-semibold"
+                          style={{ color: 'var(--accent)' }}
+                        >
+                          {skill.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4
                         className="font-display text-base font-semibold"
-                        style={{ color: 'var(--accent)' }}
+                        style={{ color: 'var(--text)' }}
                       >
-                        {skill.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
+                        {skill.name}
+                      </h4>
+                    </div>
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <h4
-                      className="truncate font-display text-base font-semibold"
-                      style={{ color: 'var(--text)' }}
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(skill)}
+                      className="rounded-lg border px-2.5 py-1 text-xs"
+                      style={{
+                        borderColor: 'var(--border)',
+                        color: 'var(--text)',
+                      }}
                     >
-                      {skill.name}
-                    </h4>
-
-                    <p
-                      className="mt-0.5 text-xs"
-                      style={{ color: 'var(--text-muted)' }}
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(skill.id)}
+                      className="rounded-lg border px-2.5 py-1 text-xs"
+                      style={{
+                        borderColor: '#DC5B4B',
+                        color: '#DC5B4B',
+                      }}
                     >
-                      Skill #{String(index + 1).padStart(2, '0')}
-                    </p>
+                      Delete
+                    </button>
                   </div>
                 </div>
+              </article>
+            ))}
 
-                <div
-                  className="mt-auto grid grid-cols-2 border-t"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => startEdit(skill)}
-                    className="flex items-center justify-center border-r py-2 text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{
-                      borderColor: 'var(--border)',
-                      color: 'var(--accent)',
-                    }}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(skill.id)}
-                    className="flex items-center justify-center py-2 text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{ color: '#DC5B4B' }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div
-          className="soft-panel rounded-2xl border border-dashed p-12 text-center"
-          style={{
-            borderColor: 'var(--border)',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <p className="text-sm">No skills added yet.</p>
-
-          <button
-            type="button"
-            onClick={openAddSkill}
-            className="mt-2 text-sm font-medium"
-            style={{ color: 'var(--accent)' }}
-          >
-            + Add a skill
-          </button>
-        </div>
-      )}
-
-      {editorOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)' }}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              resetForm()
-            }
-          }}
-        >
-          <section
-            className="soft-panel w-full max-w-2xl rounded-2xl p-5 shadow-2xl sm:p-7"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="skill-editor-title"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="eyebrow">Tech Stack Editor</p>
-
-                <h2
-                  id="skill-editor-title"
-                  className="font-display mt-2 text-2xl font-semibold"
-                  style={{ color: 'var(--text)' }}
-                >
-                  {editingId ? 'Edit skill' : 'Add skill'}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={resetForm}
-                className="flex h-9 w-9 items-center justify-center rounded-full border text-lg transition-opacity hover:opacity-70"
+            {skills.length === 0 && (
+              <div
+                className="col-span-full rounded-2xl border border-dashed p-12 text-center text-sm"
                 style={{
                   borderColor: 'var(--border)',
                   color: 'var(--text-muted)',
                 }}
-                aria-label="Close"
               >
-                ×
+                No skills have been added yet.
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {editorOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.78)' }}
+        >
+          <div
+            className="soft-panel w-full max-w-lg rounded-2xl p-6 shadow-2xl"
+            style={{ backgroundColor: 'var(--surface)' }}
+          >
+            <div
+              className="flex items-center justify-between border-b pb-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <div>
+                <p className="eyebrow">Skill Editor</p>
+                <h3
+                  className="font-display text-xl font-semibold"
+                  style={{ color: 'var(--text)' }}
+                >
+                  {editingId ? 'Edit Skill' : 'Add Skill'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-lg font-bold"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               <div>
-                <label
-                  className="text-sm font-medium"
-                  style={{ color: 'var(--text)' }}
-                >
-                  Skill name
+                <label className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                  Skill Name
                 </label>
-
                 <input
                   required
                   value={form.name}
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      name: event.target.value,
-                    })
-                  }
-                  className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Example: Python"
+                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm outline-none"
                   style={inputStyle}
-                  placeholder="Example: Power BI"
                 />
               </div>
 
               <AssetUploader
-                label="Skill icon / logo"
+                label="Skill Icon / Image"
                 value={form.image_url}
-                onChange={(url) =>
-                  setForm({
-                    ...form,
-                    image_url: url,
-                  })
-                }
+                onChange={(url) => setForm({ ...form, image_url: url })}
                 folder="skills"
-                helpText="Optional. Upload the skill logo or paste an image URL."
+                cropShape="square"
+                helpText="Optional skill logo or icon."
               />
 
               {error && (
-                <p
-                  className="rounded-xl border px-3 py-2 text-sm"
-                  style={{
-                    borderColor: '#DC5B4B',
-                    color: '#DC5B4B',
-                  }}
-                >
+                <p className="text-xs" style={{ color: '#DC5B4B' }}>
                   {error}
                 </p>
               )}
 
               <div
-                className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end"
+                className="flex justify-end gap-3 border-t pt-4"
                 style={{ borderColor: 'var(--border)' }}
               >
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-xl border px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-75"
+                  className="rounded-xl border px-4 py-2 text-sm"
                   style={{
                     borderColor: 'var(--border)',
                     color: 'var(--text)',
@@ -575,21 +537,16 @@ export default function SkillsManager() {
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={saving}
                   className="primary-button disabled:opacity-50"
                 >
-                  {saving
-                    ? 'Saving...'
-                    : editingId
-                      ? 'Save changes'
-                      : 'Add skill'}
+                  {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Skill'}
                 </button>
               </div>
             </form>
-          </section>
+          </div>
         </div>
       )}
     </div>

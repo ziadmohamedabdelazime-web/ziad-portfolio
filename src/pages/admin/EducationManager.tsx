@@ -107,11 +107,6 @@ export default function EducationManager() {
 
     const rect = event.currentTarget.getBoundingClientRect()
 
-    // Exact-card swap:
-    // If the pointer is actually inside the target card, exchange the two
-    // cards directly (A <-> B) instead of inserting A before/after B.
-    // The guard prevents rapid back-and-forth swaps while the pointer stays
-    // over the same physical card.
     const pointerInsideTarget =
       event.clientX >= rect.left &&
       event.clientX <= rect.right &&
@@ -197,11 +192,12 @@ export default function EducationManager() {
 
   async function updateSortOrders(updatedItems: Education[]) {
     if (!supabase) return
+    const client = supabase
 
     setEducation(updatedItems)
 
     const updates = updatedItems.map((item, index) =>
-      supabase
+      client
         .from('education')
         .update({ sort_order: index })
         .eq('id', item.id)
@@ -352,13 +348,13 @@ export default function EducationManager() {
           </p>
         ) : (
           <div className="mt-7 space-y-4">
-            {education.map((item, index) => (
+            {education.map((item) => (
               <article
-              key={item.id}
-              ref={(node) => setItemRef(item.id, node)}
-              onDragOver={(e) => handleDragOver(e, item.id)}
-              onDrop={(e) => handleDrop(e)}
-              onDragEnd={handleDragEnd}
+                key={item.id}
+                ref={(node) => setItemRef(item.id, node)}
+                onDragOver={(e) => handleDragOver(e, item.id)}
+                onDrop={(e) => handleDrop(e)}
+                onDragEnd={handleDragEnd}
                 className={`
                   soft-panel
                   rounded-2xl
@@ -580,7 +576,7 @@ export default function EducationManager() {
                   </p>
                 )}
 
-                <div className="flex justify-end gap-3 border-t pt-5" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex justify-end gap-5 border-t pt-5" style={{ borderColor: 'var(--border)' }}>
                   <button
                     type="button"
                     onClick={resetForm}

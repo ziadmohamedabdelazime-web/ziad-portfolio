@@ -105,11 +105,6 @@ export default function ExperienceManager() {
 
     const rect = event.currentTarget.getBoundingClientRect()
 
-    // Exact-card swap:
-    // If the pointer is actually inside the target card, exchange the two
-    // cards directly (A <-> B) instead of inserting A before/after B.
-    // The guard prevents rapid back-and-forth swaps while the pointer stays
-    // over the same physical card.
     const pointerInsideTarget =
       event.clientX >= rect.left &&
       event.clientX <= rect.right &&
@@ -193,11 +188,12 @@ export default function ExperienceManager() {
 
   async function updateSortOrders(updatedItems: Experience[]) {
     if (!supabase) return
+    const client = supabase
 
     setExperience(updatedItems)
 
     const updates = updatedItems.map((item, index) =>
-      supabase
+      client
         .from('experience')
         .update({ sort_order: index })
         .eq('id', item.id)
@@ -322,7 +318,7 @@ export default function ExperienceManager() {
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {experience.map((item, index) => (
+          {experience.map((item) => (
             <article
               key={item.id}
               ref={(node) => setItemRef(item.id, node)}
@@ -369,6 +365,7 @@ export default function ExperienceManager() {
 
                   <div className="flex gap-2">
                     <button
+                      type="button"
                       onClick={() => startEdit(item)}
                       className="rounded-xl border px-3 py-1 text-xs font-medium"
                       style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
@@ -376,6 +373,7 @@ export default function ExperienceManager() {
                       Edit
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDelete(item.id)}
                       className="rounded-xl border px-3 py-1 text-xs font-medium"
                       style={{ borderColor: '#DC5B4B', color: '#DC5B4B' }}
@@ -435,6 +433,7 @@ export default function ExperienceManager() {
                 </h2>
               </div>
               <button
+                type="button"
                 onClick={closeModal}
                 className="text-lg font-bold"
                 style={{ color: 'var(--text-muted)' }}

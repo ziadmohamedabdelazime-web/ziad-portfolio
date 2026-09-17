@@ -116,11 +116,6 @@ export default function ProjectsManager() {
 
     const rect = event.currentTarget.getBoundingClientRect()
 
-    // Exact-card swap:
-    // If the pointer is actually inside the target card, exchange the two
-    // cards directly (A <-> B) instead of inserting A before/after B.
-    // The guard prevents rapid back-and-forth swaps while the pointer stays
-    // over the same physical card.
     const pointerInsideTarget =
       event.clientX >= rect.left &&
       event.clientX <= rect.right &&
@@ -206,11 +201,12 @@ export default function ProjectsManager() {
 
   async function updateSortOrders(updatedItems: Project[]) {
     if (!supabase) return
+    const client = supabase
 
     setProjects(updatedItems)
 
     const updates = updatedItems.map((item, index) =>
-      supabase
+      client
         .from('projects')
         .update({ sort_order: index })
         .eq('id', item.id)
@@ -496,13 +492,13 @@ export default function ProjectsManager() {
           </p>
         ) : (
           <div className="mt-7 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {projects.map((project, index) => (
+            {projects.map((project) => (
               <article
-              key={project.id}
-              ref={(node) => setItemRef(project.id, node)}
-              onDragOver={(e) => handleDragOver(e, project.id)}
-              onDrop={(e) => handleDrop(e)}
-              onDragEnd={handleDragEnd}
+                key={project.id}
+                ref={(node) => setItemRef(project.id, node)}
+                onDragOver={(e) => handleDragOver(e, project.id)}
+                onDrop={(e) => handleDrop(e)}
+                onDragEnd={handleDragEnd}
                 className={`
                   soft-panel
                   overflow-hidden

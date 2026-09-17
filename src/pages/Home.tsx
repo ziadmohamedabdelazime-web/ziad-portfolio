@@ -86,7 +86,7 @@ function IconDownload() {
             transition: {
               duration: 2.5,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: 'easeInOut' as const,
             },
           },
         }}
@@ -118,7 +118,7 @@ function IconArrowRight() {
             transition: {
               duration: 2.5,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: 'easeInOut' as const,
             },
           },
         }}
@@ -266,7 +266,7 @@ export default function Home() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeInOut' },
+      transition: { duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeInOut' as const },
     },
   }
 
@@ -468,7 +468,7 @@ export default function Home() {
 
               <motion.div
                 animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' as const }}
               >
                 <IconCircle href={profile.github} label="GitHub">
                   <IconGithub />
@@ -477,7 +477,7 @@ export default function Home() {
 
               <motion.div
                 animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.35 }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.35 }}
               >
                 <IconCircle href={profile.linkedin} label="LinkedIn">
                   <IconLinkedin />
@@ -640,7 +640,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-                transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: 'easeInOut' }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: 'easeInOut' as const }}
               >
                 {activeTab === 'projects' && <ProjectsSection projects={projects} />}
 
@@ -745,7 +745,7 @@ export default function Home() {
                       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeInOut' }}
+                      transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeInOut' as const }}
                     >
                       <div className="pointer-events-none absolute inset-0 hidden sm:block">
                         <span
@@ -824,7 +824,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: 'easeInOut' as const }}
             className="soft-panel relative overflow-hidden rounded-3xl border p-6 backdrop-blur-xl sm:p-8"
             style={{
               borderColor: 'var(--border)',
