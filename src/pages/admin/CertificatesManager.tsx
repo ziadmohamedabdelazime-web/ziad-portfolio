@@ -5,18 +5,14 @@ import AssetUploader from '../../components/admin/AssetUploader'
 interface CertificateRow {
   id: string
   title: string
-  issuer: string
   issue_date: string | null
-  credential_url: string | null
   image_url: string | null
   sort_order: number | null
 }
 
 const emptyForm = {
   title: '',
-  issuer: '',
   issue_date: '',
-  credential_url: '',
   image_url: '',
 }
 
@@ -224,9 +220,7 @@ export default function CertificatesManager() {
     setEditingId(cert.id)
     setForm({
       title: cert.title,
-      issuer: cert.issuer ?? '',
       issue_date: cert.issue_date ?? '',
-      credential_url: cert.credential_url ?? '',
       image_url: cert.image_url ?? '',
     })
     setError(null)
@@ -253,9 +247,7 @@ export default function CertificatesManager() {
 
     const payload = {
       title: form.title.trim(),
-      issuer: form.issuer.trim() || '',
       issue_date: form.issue_date.trim() || null,
-      credential_url: form.credential_url.trim() || null,
       image_url: form.image_url.trim() || null,
     }
 
@@ -410,9 +402,9 @@ export default function CertificatesManager() {
                 </div>
 
                 <div className="p-5">
-                  {cert.issuer && (
+                  {cert.issue_date && (
                     <p className="font-mono text-xs" style={{ color: 'var(--accent)' }}>
-                      {cert.issuer} {cert.issue_date ? `• ${cert.issue_date}` : ''}
+                      {cert.issue_date}
                     </p>
                   )}
 
@@ -510,44 +502,16 @@ export default function CertificatesManager() {
                   />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                      Issuer
-                    </label>
-                    <input
-                      value={form.issuer}
-                      onChange={(e) => setForm({ ...form, issuer: e.target.value })}
-                      className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
-                      style={inputStyle}
-                      placeholder="e.g. Coursera / Google / DEPI"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                      Issue Date
-                    </label>
-                    <input
-                      value={form.issue_date}
-                      onChange={(e) => setForm({ ...form, issue_date: e.target.value })}
-                      className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
-                      style={inputStyle}
-                      placeholder="e.g. 2026"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                    Credential URL
+                    Issue Date
                   </label>
                   <input
-                    value={form.credential_url}
-                    onChange={(e) => setForm({ ...form, credential_url: e.target.value })}
+                    value={form.issue_date}
+                    onChange={(e) => setForm({ ...form, issue_date: e.target.value })}
                     className="mt-1.5 w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
                     style={inputStyle}
-                    placeholder="https://www.coursera.org/verify/..."
+                    placeholder="e.g. 2026"
                   />
                 </div>
 
