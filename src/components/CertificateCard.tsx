@@ -10,7 +10,7 @@ export default function CertificateCard({ cert }: { cert: Certificate }) {
   // قراءة رابط الصورة مع تغطية جميع المسميات المحتملة
   const imageUrl =
     (cert as any).image ||
-    cert.image_url ||
+    (cert as any).image_url ||
     (cert as any).imageUrl ||
     ''
 

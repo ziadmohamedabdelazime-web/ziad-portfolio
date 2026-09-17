@@ -274,7 +274,18 @@ export default function ProjectCard({ project }: { project: Project }) {
                   className="relative flex w-full items-center justify-center overflow-hidden rounded-t-3xl"
                   style={{ backgroundColor: 'var(--surface-2)' }}
                 >
-                  {images.length > 0 ? (
+                  {loadingImages ? (
+                    <div
+                      className="flex h-40 w-full items-center justify-center rounded-t-3xl p-6 sm:h-56"
+                      style={{ backgroundColor: 'var(--surface-2)' }}
+                    >
+                      <span
+                        className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
+                        style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
+                        aria-label="Loading images"
+                      />
+                    </div>
+                  ) : images.length > 0 ? (
                     <div className="relative flex min-h-[250px] max-h-[420px] w-full items-center justify-center">
                       <img
                         src={images[currentImageIndex]}
