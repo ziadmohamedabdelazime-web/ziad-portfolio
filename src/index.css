@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+}
+
+/* =========================================================
+   Light Mode Configuration
+   ========================================================= */
+:root {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* Palette Setup */
+  --bg: #F7F9FA;                  /* White / Off-White Background */
+  --surface: #C4D8E5;             /* Icy Blue Surface */
+  --surface-2: rgba(15, 44, 74, 0.08);
+  --text: #0F2C4A;                /* Deep Navy Text */
+  --text-muted: #4A6070;          /* Slate Grey Muted Text */
+  --border: rgba(15, 44, 74, 0.18);
+  --accent: #0F2C4A;              /* Navy Dark Navigation & Buttons */
+  --accent-text: #F7F9FA;         /* Light Text on Dark Accent */
+  --glow-rgb: 15, 44, 74;
+  --shadow: 0 20px 50px -20px rgba(15, 44, 74, 0.15);
+}
+
+/* =========================================================
+   Dark Mode Configuration
+   ========================================================= */
+.dark {
+  --bg: #0F2C4A;                  /* Deep Navy Background */
+  --surface: #4A6070;             /* Slate Grey Surface */
+  --surface-2: rgba(196, 216, 229, 0.1);
+  --text: #F7F9FA;                /* Crisp White Light Text */
+  --text-muted: #B8DFCA;          /* Mint Soft Accent Text */
+  --border: rgba(196, 216, 229, 0.2);
+  --accent: #C4D8E5;              /* High-Contrast Icy Blue Accent/Nav */
+  --accent-text: #0F2C4A;         /* Dark Navy Text on Light Accent */
+  --glow-rgb: 196, 216, 229;
+  --shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.5);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: var(--font-body);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   Animated Profile Frame Style
+   ========================================================= */
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animated-profile-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from var(--angle),
+    var(--accent) 0%,
+    var(--border) 25%,
+    transparent 50%,
+    var(--accent) 75%,
+    var(--border) 100%
+  );
+  animation: spinFrame 6s linear infinite;
+}
+
+@keyframes spinFrame {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* =========================================================
+   Scrollbar & Utilities
+   ========================================================= */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+* {
+  border-color: var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.section-shell {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  padding: 5rem clamp(1.25rem, 4vw, 5rem);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.soft-panel {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--accent-text) !important;
+  padding: 0.75rem 1.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px rgba(var(--glow-rgb), 0.4);
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  color: var(--text);
+  padding: 0.75rem 1.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--surface) 25%, transparent);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.secondary-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+}
+
+.glow-border {
+  box-shadow:
+    0 0 0 1px rgba(var(--glow-rgb), 0.2),
+    0 15px 35px -24px rgba(var(--glow-rgb), 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
