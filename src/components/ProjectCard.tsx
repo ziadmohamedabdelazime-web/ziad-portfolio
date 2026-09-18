@@ -227,7 +227,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       <AnimatePresence>
         {isOpen && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 overflow-y-auto"
             onClick={() => setIsOpen(false)}
           >
             <motion.div
@@ -238,15 +238,15 @@ export default function ProjectCard({ project }: { project: Project }) {
             />
 
             {/* الحاوية الأساسية للكارت مع الزر */}
-            <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col">
-              {/* زر الإغلاق: محاذي لأعلى الكارت تماماً وتبعد عنه مسافة جانبية على اليمين */}
+            <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col my-auto">
+              {/* زر الإغلاق: تم تعديله ليكون داخل حواف الشاشة والكارت تماماً في التليفون والشاشات الكبيرة */}
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation()
                   setIsOpen(false)
                 }}
-                className="absolute top-0 -right-11 sm:-right-14 z-[120] flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border shadow-xl transition-all hover:scale-110 active:scale-95"
+                className="absolute top-3 right-3 sm:-right-14 sm:top-0 z-[120] flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border shadow-xl transition-all hover:scale-110 active:scale-95"
                 style={{
                   borderColor: 'var(--border)',
                   backgroundColor: 'color-mix(in srgb, var(--bg) 95%, transparent)',
@@ -254,7 +254,7 @@ export default function ProjectCard({ project }: { project: Project }) {
                 }}
                 aria-label="Close"
               >
-                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                <X className="h-4 w-4 sm:h-6 sm:w-6" />
               </button>
 
               <motion.div

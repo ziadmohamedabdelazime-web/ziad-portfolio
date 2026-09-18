@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
   FolderGit2,
@@ -14,6 +14,8 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
+  Menu,
+  X,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import ThemeToggle from '../../components/ThemeToggle'
@@ -68,6 +70,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const [section, setSection] = useState<Section>('Dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const { data: projects } = useContent<any, Project[]>(
     'projects',
@@ -117,15 +120,18 @@ export default function AdminDashboard() {
     { label: 'Education', value: education.length, icon: GraduationCap },
   ]
 
+  const currentSectionMeta = sections.find((s) => s.id === section) || sections[0]
+  const CurrentIcon = currentSectionMeta.icon
+
   const pillSurface = {
     borderColor: 'var(--border)',
-    backgroundColor: 'color-mix(in srgb, var(--surface) 75%, transparent)',
+    backgroundColor: 'color-mix(in srgb, var(--surface) 85%, transparent)',
     boxShadow: 'var(--shadow)',
   }
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}
     >
       {/* =========================
@@ -169,6 +175,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Right Header Actions */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
 
@@ -192,7 +199,7 @@ export default function AdminDashboard() {
       ========================== */}
       <div className="flex min-h-[calc(100vh-78px)] w-full">
         {/* =========================
-            LEFT NAVIGATION (DESKTOP SIDEBAR) - MATCHING EXTERNAL NAV STYLE
+            LEFT NAVIGATION (DESKTOP SIDEBAR) - UNTOUCHED
         ========================== */}
         <aside
           className={`hidden shrink-0 border-r transition-[width] duration-500 ease-in-out lg:flex lg:flex-col ${
@@ -237,7 +244,7 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            {/* Navigation Items - Exact External Nav Style with Preserved Borders */}
+            {/* Navigation Items */}
             <nav className="flex flex-col gap-1.5 relative">
               {sections.map((item) => {
                 const isActive = section === item.id
@@ -257,7 +264,6 @@ export default function AdminDashboard() {
                     }}
                     aria-pressed={isActive}
                   >
-                    {/* Sliding active background pill using layoutId matching external Nav */}
                     {isActive && (
                       <motion.div
                         layoutId="activeAdminSidebar"
@@ -271,7 +277,6 @@ export default function AdminDashboard() {
                       />
                     )}
 
-                    {/* Inactive hover background */}
                     {!isActive && (
                       <span
                         className="absolute inset-0 rounded-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none -z-10"
@@ -283,7 +288,6 @@ export default function AdminDashboard() {
                       />
                     )}
 
-                    {/* Fixed Icon Container */}
                     <span 
                       className="flex h-6 w-6 shrink-0 items-center justify-center relative z-10 transition-colors duration-200" 
                       style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)' }}
@@ -291,7 +295,6 @@ export default function AdminDashboard() {
                       <Icon className="h-4 w-4" />
                     </span>
 
-                    {/* Label with Smooth Max-Width & Opacity Transition */}
                     <div
                       className={`ml-3 overflow-hidden transition-all duration-500 ease-in-out relative z-10 ${
                         isSidebarCollapsed
@@ -344,71 +347,115 @@ export default function AdminDashboard() {
         </aside>
 
         {/* =========================
-            MOBILE NAVIGATION (MATCHING EXTERNAL NAV STYLE)
-        ========================== */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 border-t lg:hidden p-2 backdrop-blur-md"
-          style={pillSurface}
-        >
-          <nav className="flex gap-1.5 overflow-x-auto relative">
-            {sections.map((item) => {
-              const isActive = section === item.id
-              const Icon = item.icon
-
-              return (
-                <button
-                  key={`mobile-${item.id}`}
-                  type="button"
-                  onClick={() => setSection(item.id)}
-                  className="group relative flex min-w-[95px] shrink-0 flex-col items-center gap-1.5 rounded-2xl px-3 py-2.5 text-center text-[11px] font-medium transition-colors duration-200 overflow-visible z-10 border"
-                  style={{
-                    borderColor: 'var(--border)',
-                    backgroundColor: isActive ? 'color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%)' : 'transparent',
-                    color: isActive ? 'var(--text)' : 'var(--text-muted)',
-                  }}
-                  aria-pressed={isActive}
-                >
-                  {/* Active background pill for mobile */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeAdminMobileNav"
-                      className="absolute inset-0 rounded-2xl -z-10"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(255, 255, 255, 0.05)',
-                      }}
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-
-                  {/* Inactive hover background for mobile */}
-                  {!isActive && (
-                    <span
-                      className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none -z-10"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--surface-2) 50%, transparent)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.2)',
-                      }}
-                    />
-                  )}
-
-                  <Icon className="h-4 w-4 relative z-10 transition-colors duration-200" style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)' }} />
-                  <span className={`relative z-10 transition-colors duration-200 ${isActive ? 'font-semibold text-[var(--text)]' : 'group-hover:text-[var(--text)]'}`}>
-                    {item.label}
-                  </span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
-
-        {/* =========================
             MAIN CONTENT AREA
         ========================== */}
         <main className="min-w-0 flex-1">
           <div className="mx-auto w-full max-w-[1450px] px-5 py-7 pb-24 sm:px-7 lg:px-10 lg:py-9 lg:pb-10">
+            
+            {/* =========================
+                MOBILE NAVIGATION DROPDOWN (Exact Main Website Style matching screenshot)
+            ========================== */}
+            <div className="relative mb-6 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="flex w-full items-center justify-between rounded-3xl border px-4 py-3 text-sm transition-all shadow-md backdrop-blur-md"
+                style={pillSurface}
+              >
+                <div className="flex items-center gap-3">
+                  <CurrentIcon className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+                  <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+                    {currentSectionMeta.label}
+                  </span>
+                </div>
+                {isMobileMenuOpen ? (
+                  <X className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                ) : (
+                  <Menu className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                )}
+              </button>
+
+              {/* Mobile Dropdown Expanded Menu Box */}
+              <AnimatePresence>
+                {isMobileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-3xl border p-2.5 shadow-2xl backdrop-blur-xl"
+                    style={{
+                      backgroundColor: 'color-mix(in srgb, var(--surface) 95%, transparent)',
+                      borderColor: 'var(--border)',
+                      boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
+                    }}
+                  >
+                    <div className="flex flex-col gap-1.5 relative">
+                      {sections.map((item) => {
+                        const isActive = section === item.id
+                        const Icon = item.icon
+
+                        return (
+                          <button
+                            key={`dropdown-${item.id}`}
+                            type="button"
+                            onClick={() => {
+                              setSection(item.id)
+                              setIsMobileMenuOpen(false)
+                            }}
+                            className="group relative flex h-12 w-full items-center rounded-2xl px-4 transition-colors duration-200 overflow-visible z-10 border"
+                            style={{
+                              borderColor: 'var(--border)',
+                              backgroundColor: isActive ? 'color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%)' : 'transparent',
+                              color: isActive ? 'var(--text)' : 'var(--text-muted)',
+                            }}
+                            aria-pressed={isActive}
+                          >
+                            {/* Active Sliding / Pill Background matching Main Website */}
+                            {isActive && (
+                              <motion.div
+                                layoutId="activeMobileDropdown"
+                                className="absolute inset-0 rounded-2xl -z-10"
+                                style={{
+                                  backgroundColor: 'color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%)',
+                                  border: '1px solid var(--border)',
+                                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(255, 255, 255, 0.05)',
+                                }}
+                                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                              />
+                            )}
+
+                            {/* Hover background for inactive items */}
+                            {!isActive && (
+                              <span
+                                className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none -z-10"
+                                style={{
+                                  backgroundColor: 'color-mix(in srgb, var(--surface-2) 50%, transparent)',
+                                  border: '1px solid var(--border)',
+                                  boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.2)',
+                                }}
+                              />
+                            )}
+
+                            <span 
+                              className="flex h-5 w-5 shrink-0 items-center justify-center relative z-10 transition-colors duration-200 mr-3"
+                              style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)' }}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </span>
+
+                            <span className={`text-sm relative z-10 transition-colors duration-200 ${isActive ? 'font-semibold text-[var(--text)]' : 'font-medium group-hover:text-[var(--text)]'}`}>
+                              {item.label}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* =========================
                 DASHBOARD
             ========================== */}
